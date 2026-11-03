@@ -1,0 +1,38 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Mengunci ke Ubuntu 24.04 karena proyek lama sering gagal di OS terbaru
+    runs-on: ubuntu-24.04
+
+    steps:
+    # Menggunakan v4 (sudah mendukung runner baru)
+    - uses: actions/checkout@v4
+
+    # Migrasi ke setup-java@v5 untuk menghilangkan warning, dan menggunakan Java 8
+    - name: set up JDK 8
+      uses: actions/setup-java@v5
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build with Gradle
+      run: ./gradlew assembleDebug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
+        
